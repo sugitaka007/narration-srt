@@ -2,6 +2,7 @@ import appSettings from "../app.config.json";
 
 export const APP_CONFIG = {
   name: appSettings.name,
+  tagline: appSettings.tagline,
   storageKey: "subtitle-tsunagi:state",
   storageVersion: 1,
   rewriteFormat: "narration-rewrite-exchange",

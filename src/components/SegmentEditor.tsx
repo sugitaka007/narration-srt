@@ -6,7 +6,7 @@ import {
   useRef,
   type ClipboardEvent,
   type CompositionEvent,
-  type KeyboardEvent,
+  type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
 import type { Segment } from "../types";
 import {
@@ -18,6 +18,7 @@ import {
   splitSegmentAtCursor,
 } from "../core/editor";
 import { createId } from "../core/ids";
+import { ensureFocusedControlVisible } from "../core/viewport";
 
 type SegmentUpdater = (segments: Segment[]) => Segment[];
 type SegmentCommand =
@@ -105,7 +106,7 @@ const SegmentCard = memo(function SegmentCard({
     }, 160);
   };
 
-  const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyDown = (event: ReactKeyboardEvent<HTMLTextAreaElement>) => {
     const decision = decideEditorKey({
       key: event.key,
       isComposing: event.nativeEvent.isComposing,
@@ -246,14 +247,7 @@ const SegmentCard = memo(function SegmentCard({
         onFocus={(event) => {
           const node = event.currentTarget;
           rememberSelection(node);
-          window.setTimeout(
-            () => {
-              if (node.isConnected) {
-                node.scrollIntoView({ block: "center", behavior: "smooth" });
-              }
-            },
-            120,
-          );
+          window.requestAnimationFrame(() => ensureFocusedControlVisible(node));
         }}
         onKeyDown={handleKeyDown}
         onPaste={handlePaste}
@@ -271,6 +265,7 @@ interface SegmentEditorProps {
 
 export function SegmentEditor({ segments, onSegmentsChange }: SegmentEditorProps) {
   const refs = useRef(new Map<string, HTMLTextAreaElement>());
+  const listRef = useRef<HTMLDivElement | null>(null);
   const pendingFocusRef = useRef<{ id: string; caret: number } | null>(null);
   const latestSegmentsRef = useRef(segments);
   latestSegmentsRef.current = segments;
@@ -288,7 +283,7 @@ export function SegmentEditor({ segments, onSegmentsChange }: SegmentEditorProps
     node.focus({ preventScroll: true });
     const safeCaret = Math.max(0, Math.min(pending.caret, node.value.length));
     node.setSelectionRange(safeCaret, safeCaret);
-    node.scrollIntoView({ block: "center", behavior: "smooth" });
+    ensureFocusedControlVisible(node);
     pendingFocusRef.current = null;
   }, []);
 
@@ -303,6 +298,34 @@ export function SegmentEditor({ segments, onSegmentsChange }: SegmentEditorProps
   useLayoutEffect(() => {
     applyPendingFocus();
   }, [segments, applyPendingFocus]);
+
+  useEffect(() => {
+    const closeMenusOutside = (target: EventTarget | null) => {
+      if (!(target instanceof Node)) return;
+      const openMenus = listRef.current?.querySelectorAll<HTMLDetailsElement>(
+        ".segment-menu[open]",
+      );
+      openMenus?.forEach((menu) => {
+        if (!menu.contains(target)) menu.open = false;
+      });
+    };
+    const handlePointerDown = (event: PointerEvent) => closeMenusOutside(event.target);
+    const handleFocusIn = (event: FocusEvent) => closeMenusOutside(event.target);
+    const handleDocumentKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      listRef.current
+        ?.querySelectorAll<HTMLDetailsElement>(".segment-menu[open]")
+        .forEach((menu) => { menu.open = false; });
+    };
+    document.addEventListener("pointerdown", handlePointerDown, true);
+    document.addEventListener("focusin", handleFocusIn, true);
+    document.addEventListener("keydown", handleDocumentKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown, true);
+      document.removeEventListener("focusin", handleFocusIn, true);
+      document.removeEventListener("keydown", handleDocumentKeyDown);
+    };
+  }, []);
 
   const commitSegments = useCallback(
     (next: Segment[]) => {
@@ -422,7 +445,7 @@ export function SegmentEditor({ segments, onSegmentsChange }: SegmentEditorProps
   );
 
   return (
-    <div className="segment-list" aria-label="字幕一覧">
+    <div className="segment-list" aria-label="字幕一覧" ref={listRef}>
       {segments.map((segment, index) => (
         <SegmentCard
           key={segment.id}

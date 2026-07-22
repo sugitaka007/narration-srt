@@ -25,8 +25,6 @@
   --radius-sm: 12px;
   --radius: 18px;
   --radius-lg: 26px;
-  --visual-height: 100dvh;
-  --keyboard-offset: 0px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -59,7 +57,7 @@
 html {
   min-height: 100%;
   background: var(--bg);
-  scroll-padding-bottom: calc(132px + var(--keyboard-offset) + env(safe-area-inset-bottom));
+  scroll-padding-bottom: calc(112px + env(safe-area-inset-bottom));
 }
 
 body {
@@ -141,7 +139,8 @@ p {
 .app-shell,
 .home-shell {
   width: min(100%, 780px);
-  min-height: var(--visual-height);
+  min-height: 100vh;
+  min-height: 100svh;
   margin: 0 auto;
   padding: 0 16px calc(40px + env(safe-area-inset-bottom));
 }
@@ -333,13 +332,6 @@ p {
   letter-spacing: -0.055em;
 }
 
-.home-header p:last-child {
-  max-width: 520px;
-  margin-bottom: 0;
-  color: var(--muted);
-  line-height: 1.7;
-}
-
 .home-create {
   flex: none;
 }
@@ -426,7 +418,7 @@ p {
 .empty-review {
   display: grid;
   max-width: 560px;
-  min-height: 330px;
+  min-height: 280px;
   margin: 22px auto;
   padding: 38px 24px;
   place-items: center;
@@ -503,7 +495,7 @@ p {
 
 /* Editor */
 .editor-shell {
-  padding-bottom: calc(104px + var(--keyboard-offset) + env(safe-area-inset-bottom));
+  padding-bottom: calc(104px + env(safe-area-inset-bottom));
 }
 
 .editor-intro {
@@ -665,7 +657,7 @@ p {
   position: fixed;
   z-index: 18;
   right: 0;
-  bottom: var(--keyboard-offset);
+  bottom: 0;
   left: 0;
   display: flex;
   width: min(100%, 780px);
@@ -689,6 +681,12 @@ p {
 
 .editor-bottom-bar .primary-button {
   min-width: 156px;
+}
+
+.is-keyboard-open .editor-bottom-bar {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .undo-banner,

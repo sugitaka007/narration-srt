@@ -1,4 +1,4 @@
-const CACHE_NAME = "subtitle-tsunagi-v2";
+const CACHE_NAME = "gorone-douga-daihon-v3";
 const BUILD_ASSETS = /*__BUILD_ASSETS__*/ [];
 const PRECACHE_FILES = [
   "./",

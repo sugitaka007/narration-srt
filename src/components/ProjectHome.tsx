@@ -37,23 +37,19 @@ export function ProjectHome({
     <main className="home-shell">
       <header className="home-header">
         <div>
-          <p className="eyebrow">スマホで書いて、編集ソフトへ</p>
+          <p className="eyebrow">{APP_CONFIG.tagline}</p>
           <h1>{APP_CONFIG.name}</h1>
-          <p>改行キーで字幕を一つずつ。文章はこの端末の中だけに保存されます。</p>
         </div>
         <button type="button" className="primary-button home-create" onClick={onCreate}>
-          ＋ 新しい台本
+          ＋ 台本を追加
         </button>
       </header>
 
       {projects.length === 0 ? (
         <section className="empty-state">
           <span className="empty-state__mark" aria-hidden="true">1</span>
-          <h2>最初の字幕から始めましょう</h2>
-          <p>動画名を付けたら、あとは一つ書いて改行するだけです。</p>
-          <button type="button" className="primary-button" onClick={onCreate}>
-            新しい台本を作成
-          </button>
+          <h2>まずは台本を追加</h2>
+          <p>動画名を付けて、字幕を一つずつ入力します。</p>
         </section>
       ) : (
         <section aria-labelledby="project-list-title">

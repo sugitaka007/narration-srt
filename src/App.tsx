@@ -12,6 +12,10 @@ import {
   loadStoredState,
   saveStoredState,
 } from "./core/storage";
+import {
+  ensureFocusedControlVisible,
+  isSoftwareKeyboardOpen,
+} from "./core/viewport";
 import type {
   ExportSettings,
   PendingReview,
@@ -88,18 +92,22 @@ export default function App() {
     const viewport = window.visualViewport;
     if (!viewport) return;
     const syncViewport = () => {
-      document.documentElement.style.setProperty("--visual-height", `${viewport.height}px`);
-      document.documentElement.style.setProperty(
-        "--keyboard-offset",
-        `${Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop)}px`,
-      );
+      const keyboardOpen = isSoftwareKeyboardOpen(window.innerHeight, viewport.height);
+      document.documentElement.classList.toggle("is-keyboard-open", keyboardOpen);
+      if (keyboardOpen) {
+        window.requestAnimationFrame(() => {
+          const active = document.activeElement;
+          if (active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement) {
+            ensureFocusedControlVisible(active);
+          }
+        });
+      }
     };
     syncViewport();
     viewport.addEventListener("resize", syncViewport);
-    viewport.addEventListener("scroll", syncViewport);
     return () => {
       viewport.removeEventListener("resize", syncViewport);
-      viewport.removeEventListener("scroll", syncViewport);
+      document.documentElement.classList.remove("is-keyboard-open");
     };
   }, []);
 
@@ -296,6 +304,7 @@ export default function App() {
           onHome={() => setView("home")}
           onBack={() => setView("finish")}
           onSaveRequest={handleSaveRequest}
+          onReview={handleReview}
         />
       ) : null}
       {view === "review" && pendingReview ? (

@@ -43,9 +43,6 @@ export function buildInstructionForGpt(preferences: RewritePreferences): string 
     active: "意味と事実を維持したまま、読みやすさと伝わりやすさを優先して積極的に整える。",
   }[preferences.strength];
   const optional = [
-    preferences.targetAudience
-      ? `想定する視聴者: ${preferences.targetAudience}`
-      : "想定する視聴者: 指定なし",
     preferences.desiredTone
       ? `希望する口調や雰囲気: ${preferences.desiredTone}`
       : "希望する口調や雰囲気: 指定なし",
@@ -93,6 +90,7 @@ export function createRewriteExchange(
     createdAt,
     rewriteRequest: {
       ...preferences,
+      targetAudience: "",
       selectedOptions: [...preferences.selectedOptions],
       instructionForGPT: buildInstructionForGpt(preferences),
     },

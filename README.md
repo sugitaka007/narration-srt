@@ -1,4 +1,4 @@
-# 字幕つなぎ
+# ゴロ寝動画台本
 
 スマートフォンでナレーション兼字幕を一つずつ入力し、DaVinci Resolve / Adobe Premiere Proで使える標準SRTを書き出す、バックエンド不要のWebアプリです。
 

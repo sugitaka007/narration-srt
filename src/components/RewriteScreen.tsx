@@ -3,16 +3,18 @@ import {
   REWRITE_OPTION_LABELS,
   REWRITE_STRENGTH_LABELS,
 } from "../config";
-import { downloadFile, shareOrDownloadFile } from "../core/files";
+import { shareOrDownloadFile } from "../core/files";
 import { createRewriteExchange, createRewriteFile } from "../core/rewrite";
 import type {
   GptRewriteExchange,
+  PendingReview,
   Project,
   RewriteOptionKey,
   RewritePreferences,
   RewriteRequestRecord,
 } from "../types";
 import { FlowHeader } from "./FlowHeader";
+import { RewriteImportPanel } from "./RewriteImportPanel";
 
 interface RewriteScreenProps {
   project: Project;
@@ -20,6 +22,7 @@ interface RewriteScreenProps {
   onHome: () => void;
   onBack: () => void;
   onSaveRequest: (record: RewriteRequestRecord, preferences: RewritePreferences) => void;
+  onReview: (review: PendingReview) => void;
 }
 
 type DeliveryMessage = { tone: "success" | "neutral" | "error"; text: string } | null;
@@ -30,9 +33,11 @@ export function RewriteScreen({
   onHome,
   onBack,
   onSaveRequest,
+  onReview,
 }: RewriteScreenProps) {
   const [preferences, setPreferences] = useState<RewritePreferences>(() => ({
     ...project.rewritePreferences,
+    targetAudience: "",
     selectedOptions: [...project.rewritePreferences.selectedOptions],
   }));
   const [generated, setGenerated] = useState<GptRewriteExchange | null>(null);
@@ -71,12 +76,6 @@ export function RewriteScreen({
       setMessage({ tone: "error", text: result.message });
     }
     setBusy(false);
-  };
-
-  const handleDownload = () => {
-    const exchange = generated ?? makeExchange();
-    downloadFile(createRewriteFile(exchange, project.title));
-    setMessage({ tone: "success", text: "GPT修正用JSONをダウンロードしました。" });
   };
 
   return (
@@ -134,17 +133,6 @@ export function RewriteScreen({
         <div className="optional-fields">
           <h2>任意の希望</h2>
           <label>
-            <span>想定する視聴者</span>
-            <input
-              value={preferences.targetAudience}
-              placeholder="例：はじめて動画編集をする人"
-              onChange={(event) => {
-                const value = event.currentTarget.value;
-                setPreferences((current) => ({ ...current, targetAudience: value }));
-              }}
-            />
-          </label>
-          <label>
             <span>希望する口調や雰囲気</span>
             <input
               value={preferences.desiredTone}
@@ -184,9 +172,6 @@ export function RewriteScreen({
         >
           {busy ? "JSONを準備中…" : "GPT修正用JSONを作成"}
         </button>
-        <button type="button" className="secondary-button" onClick={handleDownload}>
-          JSONをダウンロード
-        </button>
         {generated ? (
           <p className="share-instruction">
             このファイルをGPTへ添付して送信してください。依頼内容はファイル内に含まれているため、追加の命令入力は不要です。
@@ -194,6 +179,7 @@ export function RewriteScreen({
         ) : null}
         {message ? <p className={`status-message status-message--${message.tone}`} role="status">{message.text}</p> : null}
       </div>
+      <RewriteImportPanel project={project} onReview={onReview} />
     </main>
   );
 }
