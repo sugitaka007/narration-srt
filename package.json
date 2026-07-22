@@ -1,0 +1,30 @@
+{
+  "name": "narration-srt",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc --noEmit && vite build && node scripts/inject-sw-assets.mjs",
+    "preview": "vite preview --host 0.0.0.0",
+    "preview:subpath": "node scripts/serve-subpath.mjs",
+    "test": "tsx --test tests/*.test.ts",
+    "check": "pnpm test && pnpm build"
+  },
+  "dependencies": {
+    "react": "19.2.6",
+    "react-dom": "19.2.6"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.19",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "6.0.2",
+    "tsx": "4.23.1",
+    "typescript": "5.9.3",
+    "vite": "8.0.13"
+  },
+  "type": "module"
+}
